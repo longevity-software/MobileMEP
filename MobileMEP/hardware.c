@@ -12,7 +12,12 @@
 
 #define HEARTBEAT_LED_PORT		PORTB
 #define HEARTBEAT_LED_PORT_DDR	DDRB
-#define HEARTBEAT_LED_PIN			(1<<0)
+#define HEARTBEAT_LED_PIN		(1<<0)
+
+#define SERIAL_PORT_PORT		PORTD
+#define SERIAL_PORT_PORT_DDR	DDRD
+#define SERIAL_PORT_RX_PIN		(1<<0)
+#define SERIAL_PORT_TX_PIN		(1<<1)
 
 static LED_STATES hdw_heartbeat_led_state;
 
@@ -26,6 +31,11 @@ void HDW_Init(void)
 	// set state to on to ensure it turns off with call to function
 	hdw_heartbeat_led_state = LED_ON;
 	HDW_Set_heartbeat_led_state(LED_OFF);
+	//
+	// set the serial port rx as an input and tx as an output 
+	SERIAL_PORT_PORT_DDR |= SERIAL_PORT_TX_PIN;
+	SERIAL_PORT_PORT_DDR &= ~SERIAL_PORT_RX_PIN;
+	//
 }
 
 // name:	HDW_Set_heartbeat_led_state

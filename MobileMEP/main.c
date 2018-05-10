@@ -5,11 +5,10 @@
  * Author : Graham
  */ 
 
-#define F_CPU 8000000
+#include "hardware.h"
+#include "serial.h"
 
 #include <util/delay.h>
-
-#include "hardware.h"
 
 // name:	main
 // Desc:	main program entry point, initialises other modules and 
@@ -18,10 +17,12 @@ int main(void)
 {
 	// call module initialisation functions
 	HDW_Init();
-	
-    /* Replace with your application code */
-    while (1) 
-    {
+	//
+	SRL_Init();
+	//
+	// main super loop 
+	while (1) 
+	{
 		// testing code, will be reworked
 		HDW_Set_heartbeat_led_state(LED_ON);
 		//
@@ -30,6 +31,6 @@ int main(void)
 		HDW_Set_heartbeat_led_state(LED_OFF);
 		//
 		_delay_ms(1000);
-    }
+	}
 }
 

@@ -9,6 +9,8 @@
 #ifndef HARDWARE_H_
 #define HARDWARE_H_
 
+#define F_CPU 8000000
+
 typedef enum
 {
 	LED_OFF,
