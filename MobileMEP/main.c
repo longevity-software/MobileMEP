@@ -9,6 +9,9 @@
 #include "serial.h"
 
 #include <util/delay.h>
+#include <avr/interrupt.h>
+
+static unsigned char temp_data[3] = {0x30,0x0A,0x0D};
 
 // name:	main
 // Desc:	main program entry point, initialises other modules and 
@@ -20,17 +23,22 @@ int main(void)
 	//
 	SRL_Init();
 	//
+	// enable interrupts now the modules are set up
+	sei();
+	//
 	// main super loop 
 	while (1) 
 	{
 		// testing code, will be reworked
 		HDW_Set_heartbeat_led_state(LED_ON);
 		//
-		_delay_ms(200);
+		_delay_ms(1000);
 		//
 		HDW_Set_heartbeat_led_state(LED_OFF);
 		//
 		_delay_ms(1000);
+		//
+		SRL_Add_data_to_transmit_buffer(temp_data, 3);
 	}
 }
 

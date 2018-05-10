@@ -12,6 +12,7 @@
 
 void SRL_Init(void);
 
-
+void SRL_Add_data_to_transmit_buffer(const unsigned char *data_to_add_ptr, unsigned short data_length);
+unsigned char SRL_Get_data_byte_from_receive_buffer(void);
 
 #endif /* SERIAL_H_ */
