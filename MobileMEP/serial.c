@@ -8,6 +8,7 @@
 
 #include "serial.h"
 #include "utilities.h"
+#include "schedular.h"
 
 #include <string.h>
 #include <avr/io.h>
@@ -44,6 +45,8 @@ static unsigned short srl_transmit_input_index;
 static unsigned short srl_transmit_output_index;
 static unsigned short srl_transmit_bytes_in_buffer;
 
+static unsigned char srl_index_of_task_to_signal_on_rx = NO_TASK;
+
 // name:	SRL_Init
 // Desc:	Module initialisation function sets up serial port.
 void SRL_Init(void)
@@ -60,12 +63,11 @@ void SRL_Init(void)
 	srl_transmit_output_index = 0;
 	srl_transmit_bytes_in_buffer = 0;
 	//
-	UCSR0A = 0x00;
+	// set up the serial port for 115200-8-n-1
+	UCSR0A = DOUBLE_UART_TRANSMISSION_SPEED;
 	//
 	UCSR0B = UART_RX_INTERRUPT_ENABLE | 
-				UART_DATA_REGISTER_EMPTY_INTERRUPT_ENABLE | 
-				RECEIVER_ENABLE | TRANSMITTER_ENABLE |
-				DOUBLE_UART_TRANSMISSION_SPEED;
+				RECEIVER_ENABLE | TRANSMITTER_ENABLE;
 	//
 	UCSR0C = EIGHT_DATA_BITS;
 	//
@@ -93,14 +95,20 @@ void SRL_Add_data_to_transmit_buffer(const unsigned char *data_to_add_ptr, unsig
 		}
 	}
 	//
+	// if this is the first data then start sending it
 	if(0 == srl_transmit_bytes_in_buffer)
 	{
+		// add data to the tx buffer
 		UDR0 = srl_transmit_data_buffer[srl_transmit_output_index];
+		//
+		// and enable the data register empty interrupt
+		UCSR0B |= UART_DATA_REGISTER_EMPTY_INTERRUPT_ENABLE;
 	}
 	//
 	// add these bytes to the bytes in transmit buffer
 	srl_transmit_bytes_in_buffer += data_length;
 	//
+	// re enable interrupts
 	sei();
 }
 
@@ -134,6 +142,20 @@ unsigned char SRL_Get_data_byte_from_receive_buffer(void)
 	return next_byte;
 }
 
+// name:	SRL_Get_number_of_bytes_in_rx_buffer
+// Desc:	returns the number of bytes in the rx buffer.
+unsigned short SRL_Get_number_of_bytes_in_rx_buffer(void)
+{
+	return srl_receive_bytes_in_buffer;
+}
+
+// name:	SRL_Set_task_to_signal_on_data_rx
+// Desc:	sets the task to signal when data is received.
+void SRL_Set_task_to_signal_on_data_rx(unsigned char index_of_task_to_signal)
+{
+	srl_index_of_task_to_signal_on_rx = index_of_task_to_signal;
+}
+
 // name:	ISR(USART0_RX_vect)
 // Desc:	UART receive interrupt.
 ISR(USART0_RX_vect)
@@ -150,6 +172,13 @@ ISR(USART0_RX_vect)
 	{
 		srl_receive_data_buffer[srl_receive_input_index++] = received_byte;
 		srl_receive_bytes_in_buffer++;
+		//
+		// if there is a task to trigger and this is the 1st byte then trigger the task
+		if((NO_TASK != srl_index_of_task_to_signal_on_rx)&&
+			(1 == srl_receive_bytes_in_buffer))
+		{
+			SCH_Signal_task(srl_index_of_task_to_signal_on_rx, DATA_TRIGGERED);		
+		}
 		//
 		if(MAXIMUM_RX_BUFFER_SIZE == srl_receive_input_index)
 		{
@@ -176,5 +205,10 @@ ISR(USART0_UDRE_vect)
 	{
 		// send the next byte out
 		UDR0 = srl_transmit_data_buffer[srl_transmit_output_index];
+	}
+	else
+	{
+		// disable the UDRE interrupt
+		UCSR0B &= ~UART_DATA_REGISTER_EMPTY_INTERRUPT_ENABLE;
 	}
 }
