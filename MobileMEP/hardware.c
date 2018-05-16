@@ -7,6 +7,8 @@
  */ 
 
 #include "hardware.h"
+#include "schedular.h"
+#include "timer.h"
 
 #include <avr/io.h>
 
@@ -21,10 +23,14 @@
 
 static LED_STATES hdw_heartbeat_led_state;
 
+static void heartbeat_led_control(void);
+
 // name:	HDW_Init
 // Desc:	Module initialisation function sets ports up.
 void HDW_Init(void)
 {
+	unsigned char heartbeat_task_index;
+	
 	// set the heartbeat led pin as an output
 	HEARTBEAT_LED_PORT_DDR |= HEARTBEAT_LED_PIN;
 	//
@@ -36,6 +42,10 @@ void HDW_Init(void)
 	SERIAL_PORT_PORT_DDR |= SERIAL_PORT_TX_PIN;
 	SERIAL_PORT_PORT_DDR &= ~SERIAL_PORT_RX_PIN;
 	//
+	// add the heartbeat led task and set a timer to call it every second
+	heartbeat_task_index = SCH_Add_task_to_list(heartbeat_led_control);
+	//
+	TMR_Set_timer_to_signal_task(heartbeat_task_index, TIMER_COUNT_1_S, TIMER_COUNT_1_S);
 }
 
 // name:	HDW_Set_heartbeat_led_state
@@ -55,5 +65,19 @@ void HDW_Set_heartbeat_led_state(LED_STATES new_state)
 		{
 			HEARTBEAT_LED_PORT |= HEARTBEAT_LED_PIN;
 		}
+	}
+}
+
+// name:	heartbeat_led_control
+// Desc:	Modifies the heartbeat led if the state is changing.
+static void heartbeat_led_control(void)
+{
+	if(hdw_heartbeat_led_state == LED_OFF)
+	{
+		HDW_Set_heartbeat_led_state(LED_ON);
+	}
+	else
+	{
+		HDW_Set_heartbeat_led_state(LED_OFF);
 	}
 }

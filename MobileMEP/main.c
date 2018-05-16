@@ -9,6 +9,7 @@
 #include "serial.h"
 #include "schedular.h"
 #include "communications.h"
+#include "timer.h"
 
 #include <util/delay.h>
 #include <avr/interrupt.h>
@@ -19,11 +20,12 @@
 int main(void)
 {	
 	// call module initialisation functions
+	SCH_Init();
+	TMR_Init();
+	//
 	HDW_Init();
 	//
 	SRL_Init();
-	//
-	SCH_Init();
 	//
 	CMS_Init();
 	//

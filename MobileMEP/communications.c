@@ -173,9 +173,8 @@ static void parse_received_packet(void)
 			}
 			else
 			{
-				
+				process_received_response(cms_received_packets[cms_received_packet_parse_index][COMMAND_BYTE]);				
 			}
-			
 		}
 	}
 	//
@@ -220,7 +219,7 @@ static inline void process_received_command(unsigned char command)
 		// populate beginning bytes
 		cms_packet_to_transmit[START_OF_PACKET_BYTE] = START_OF_PACKET;
 		cms_packet_to_transmit[COMMAND_BYTE] = command;
-		cms_packet_to_transmit[STATUS_BYTE] = 0x82;
+		cms_packet_to_transmit[STATUS_BYTE] = 0x01;
 		//
 		response_crc = CRC_Calculate_crc(&cms_packet_to_transmit[START_OF_PACKET_BYTE], (DEFAULT_BYTES_INCLUDED_IN_CRC + cms_packet_to_transmit[BYTE_COUNT_BYTE]));
 		//
@@ -234,7 +233,7 @@ static inline void process_received_command(unsigned char command)
 	}
 	else
 	{
-		// TBD send error response
+		// do nothing this command will be retried 
 	}
 }
 

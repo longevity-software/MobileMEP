@@ -1,8 +1,9 @@
 /*
  * utilities.h
  *
- * Created: 10/05/2018 20:35:10
- *  Author: Graham
+ * Created:		10/05/2018 20:35:10
+ * Author:		Graham
+ * Description:	general #defines and typedefs for common tasks
  */ 
 
 

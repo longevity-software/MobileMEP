@@ -1,8 +1,9 @@
 /*
  * crc.h
  *
- * Created: 12/05/2018 20:39:46
- *  Author: Graham
+ * Created:		12/05/2018 20:39:46
+ *  Author:		Graham
+ * Description:	crc generation function.
  */ 
 
 
